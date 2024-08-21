@@ -57,28 +57,18 @@ def plot_ang_res_by_tier(data_list, bins_list, tiers, titles, param, x_coord):
 
     for data, bins, tier, title in zip(data_list, bins_list,
                                        tiers, titles):
-        low_err = np.quantile(data, .16)
-        high_err = np.quantile(data, .84)
-        
         ax_array[row, col].hist(data, bins=bins)
         ax_array[row, col].set_title(tier, fontsize=15)
         ax_array[row, col].set_ylabel('Count', fontsize=15)
         ax_array[row, col].set_xlabel(title + ' ' + param, fontsize=15)
         ax_array[row, col].set_yscale('log')
-        ax_array[row, col].vlines(np.mean(data), 0, 1, transform=ax_array[row, col].get_xaxis_transform(), linestyle='solid')
-        ax_array[row, col].vlines(low_err, 0, 1, transform=ax_array[row, col].get_xaxis_transform(), linestyle='dashed')
-        ax_array[row, col].vlines(high_err, 0, 1, transform=ax_array[row, col].get_xaxis_transform(), linestyle='dashed')
-        
         s1 = 'Mean: {}'.format(round(np.mean(data), 3))
         s2 = 'RMS: {}'.format(round(np.sqrt(np.mean(data ** 2)), 3))
-        s3 = '68%: {} - {}'.format(round(low_err, 3), round(high_err, 3))
-        
         ax_array[row, col].annotate(s1, xy=(20, 60), xytext=(x_coord, 1000),
                                     fontsize=18)
         ax_array[row, col].annotate(s2, xy=(20, 40), xytext=(x_coord, 500),
                                     fontsize=18)
-        ax_array[row, col].annotate(s3, xy=(20, 20), xytext=(x_coord, 200), fontsize=15)
-        # ax_array[row, col].vlines(55, 0, 1, transform=ax_array[row, col].get_xaxis_transform(), linestyle = 'dashed')
+        # ax_array[row, col].vlines(55, 0, 5000000, linestyle = 'dashed')
 
         col = col + 1
         if col == 2:
@@ -100,7 +90,7 @@ def reco_ang_res(true_zen, reco_zen, true_az, reco_az, reconstruction):
 
     opening_angle = find_opening_angle(true_zen, reco_zen, true_az, reco_az)
 
-    fig = plt.figure(figsize=(15, 5), constrained_layout=True)
+    fig = plt.figure(figsize=(12, 4), constrained_layout=True)
     ax_array = fig.subplots(1, 3, squeeze=False)
     fig.suptitle('Reconstruction Resolution for Zenith & Azimuth')
 
@@ -111,13 +101,8 @@ def reco_ang_res(true_zen, reco_zen, true_az, reco_az, reconstruction):
     ax_array[0, 0].set_yscale('log')
     s1 = 'Mean: {}'.format(round(np.mean(zendiff), 3))
     s2 = 'RMS: {}'.format(round(np.sqrt(np.mean(zendiff ** 2)), 3))
-    s3 = '68%: {} - {}'.format(round(np.quantile(zendiff, .16), 3), round(np.quantile(zendiff, .84), 3))
     ax_array[0, 0].annotate(s1, xy=(20, 60), xytext=(20, 1000))
     ax_array[0, 0].annotate(s2, xy=(20, 40), xytext=(20, 500))
-    ax_array[0, 0].annotate(s3, xy=(20, 20), xytext=(23, 200))
-    ax_array[0, 0].vlines(np.quantile(zendiff, .16), 0, 1, transform=ax_array[0, 0].get_xaxis_transform(), linestyle='dashed')
-    ax_array[0, 0].vlines(np.mean(zendiff), 0, 1, transform=ax_array[0, 0].get_xaxis_transform(), linestyle='solid')
-    ax_array[0, 0].vlines(np.quantile(zendiff, .84), 0, 1, transform=ax_array[0, 0].get_xaxis_transform(), linestyle='dashed')
 
     ax_array[0, 1].hist(azdiff, abincenters)
     ax_array[0, 1].set_title('Azimuth')
@@ -126,13 +111,8 @@ def reco_ang_res(true_zen, reco_zen, true_az, reco_az, reconstruction):
     ax_array[0, 1].set_yscale('log')
     s1 = 'Mean: {}'.format(round(np.mean(azdiff), 3))
     s2 = 'RMS: {}'.format(round(np.sqrt(np.mean(azdiff ** 2)), 3))
-    s3 = '68%: {} - {}'.format(round(np.quantile(azdiff, .16), 3), round(np.quantile(azdiff, .84), 3))
     ax_array[0, 1].annotate(s1, xy=(10, 60), xytext=(100, 1000))
     ax_array[0, 1].annotate(s2, xy=(10, 40), xytext=(100, 500))
-    ax_array[0, 1].annotate(s3, xy=(10, 20), xytext=(100, 200))
-    ax_array[0, 1].vlines(np.quantile(azdiff, .16), 0, 1, transform=ax_array[0, 1].get_xaxis_transform(), linestyle='dashed')
-    ax_array[0, 1].vlines(np.mean(azdiff), 0, 1, transform=ax_array[0, 1].get_xaxis_transform(), linestyle='solid')
-    ax_array[0, 1].vlines(np.quantile(azdiff, .84), 0, 1, transform=ax_array[0, 1].get_xaxis_transform(), linestyle='dashed')
 
     ax_array[0, 2].hist(opening_angle, bins=100)
     ax_array[0, 2].set_title('Opening Angle')
@@ -141,13 +121,8 @@ def reco_ang_res(true_zen, reco_zen, true_az, reco_az, reconstruction):
     ax_array[0, 2].set_yscale('log')
     s1 = 'Mean: {}'.format(round(np.mean(opening_angle), 3))
     s2 = 'RMS: {}'.format(round(np.sqrt(np.mean(opening_angle ** 2)), 3))
-    s3 = '68%: {} - {}'.format(round(np.quantile(opening_angle, .16), 3), round(np.quantile(opening_angle, .84), 3))
     ax_array[0, 2].annotate(s1, xy=(10, 60), xytext=(50, 1000))
     ax_array[0, 2].annotate(s2, xy=(10, 40), xytext=(50, 500))
-    ax_array[0, 2].annotate(s3, xy=(10, 20), xytext=(50, 200))
-    ax_array[0, 2].vlines(np.quantile(opening_angle, .16), 0, 1, transform=ax_array[0, 2].get_xaxis_transform(), linestyle='dashed')
-    ax_array[0, 2].vlines(np.mean(opening_angle), 0, 1, transform=ax_array[0, 2].get_xaxis_transform(), linestyle='solid')
-    ax_array[0, 2].vlines(np.quantile(opening_angle, .84), 0, 1, transform=ax_array[0, 2].get_xaxis_transform(), linestyle='dashed')
 
 
 def reco_open_ang_res_bytier(mc_zen, reco_zen, mc_az, reco_az, reco_names, tiers):
@@ -337,8 +312,6 @@ def open_angle_p_fe_by_tier(mc_zen_p, reco_zen_p, mc_az_p, reco_az_p, mc_zen_fe,
     plot_vs_zenith_bytier(data, titles, "Opening Angle")
 
 
-""" Add methods that show first slice 68% interval"""
-
 """
 Weighted quantile
 From Stack Overflow: @Alleo
@@ -385,170 +358,3 @@ def weighted_quantile(values, quantiles, sample_weight=None,
     else:
         weighted_quantiles /= np.sum(sample_weight)
     return np.interp(quantiles, weighted_quantiles, values)
-    
-def bin_weighted_param(param, bin_ends, param_weights=None):
-    # Define lists
-    indices = []
-    binned = []
-    binned_w = []
-    err = []
-    """
-    np.digitize(a, bins) gives the bin number (index+1) that each entry in a should go into
-    So by subtracting 1, we can get the index, and create a 2D array with len(zenbins) rows and 
-    N_i events in each row (columns)
-
-    e.g. mczenbins[0] will have all the MCPrimary zenith readings between 0-3 degrees
-    and brnazbins[3] will have all the BurnSample azimuth readings between 9-12 degrees
-    """
-    # First, get the indexies of where all zenith events should go using digitize
-    indices = np.digitize(param, bin_ends, right=False) - 1
-    for b in range(len(bin_ends) - 1):
-        binned.append(param[indices == b])
-        if param_weights is not None:
-            binned_w.append(param_weights[indices == b])
-
-    if len(binned_w) > 0:
-        for b in binned_w:
-            err.append(math.sqrt(np.sum(b * b)))
-    else:
-        for b in binned:
-            err.append(math.sqrt(len(b)))
-    return [binned, binned_w, err]
-
-
-def bin_particle_energy(particle_param, particle_en, particle_weights, bin_ends):
-    median = []
-    err = []
-    indices = np.digitize(particle_param, bin_ends, right=False) - 1
-    for b in range(len(bin_ends) - 1):
-        m, u, l = weighted_quantile(particle_en[indices == b] * (10 ** -6), [.5, .84, .16],
-                                    sample_weight=particle_weights[indices == b])
-        median.append(m)
-        err.append([m - l, u - m])
-    return [median, err]
-
-def compare_dist(reco, reco_w, data, reco_name, param_name, bin_ends):
-    reco_bin, reco_bin_w, reco_err = bin_weighted_param(reco, bin_ends, reco_w)
-    data_bin, data_bin_w, data_err = bin_weighted_param(data, bin_ends)
-
-    bin_centres = (bin_ends[1:] + bin_ends[:-1])/2
-
-    y_reco = plt.hist(reco, bin_ends, weights=reco_w)[0]
-    y_data = plt.hist(data, bin_ends)[0]
-    plt.close()
-
-    fig = plt.figure(figsize=(10, 7), constrained_layout=True)
-    ax_array = fig.subplots(2, 2, squeeze=False)
-    fig.suptitle('Sim vs Data '+ reco_name + ' ' + param_name)
-
-    ax_array[0,0].set_title('Linear')
-    ax_array[0,0].set_xlabel(r'$Zenith\;angle\;[\degree]$')
-    ax_array[0,0].set_ylabel('Fraction of Events')
-    ax_array[0,0].errorbar(bin_centres, y_reco/sum(y_reco), yerr=reco_err/sum(y_reco), label='Sim ' + reco_name, capsize=3)
-    ax_array[0,0].errorbar(bin_centres, y_data/sum(y_data), yerr=data_err/sum(y_data), label='Data ' + reco_name, capsize=3)
-    ax_array[0,0].set_ylim(0, .1)
-    ax_array[0,0].legend(loc='lower center')
-
-    ax_array[0,1].set_title('Log')
-    ax_array[0,1].set_xlabel(r'$Zenith\;angle\;[\degree]$')
-    ax_array[0,1].set_ylabel('Fraction of Events')
-    ax_array[0,1].semilogy()
-    ax_array[0,1].errorbar(bin_centres, y_reco/sum(y_reco), yerr=reco_err/sum(y_reco), label='Sim ' + reco_name, capsize=3)
-    ax_array[0,1].errorbar(bin_centres, y_data/sum(y_data), yerr=data_err/sum(y_data), label='Data ' + reco_name, capsize=3)
-    ax_array[0,1].legend(loc='lower center')
-
-
-    ax_array[1,0].set_title('Ratio Linear')
-    ax_array[1,0].set_xlabel(r'$Zenith\;angle\;[\degree]$')
-    ax_array[1,0].set_ylabel('Ratio')
-    ax_array[1,0].errorbar(bin_centres, ((y_reco/sum(y_reco))/(y_data/sum(y_data))), yerr=.1, label='Ratio', capsize=3)
-    ax_array[1,0].legend(loc='lower center')
-
-
-    ax_array[1,1].set_title('Ratio Log')
-    ax_array[1,1].set_xlabel(r'$Zenith\;angle\;[\degree]$')
-    ax_array[1,1].set_ylabel('Ratio')
-    ax_array[1,1].set_yscale('symlog')
-    ax_array[1,1].errorbar(bin_centres, ((y_reco/sum(y_reco))/(y_data/sum(y_data))), yerr=.1, label='Ratio', capsize=3)
-    ax_array[1,1].legend(loc='lower center')
-
-
-def dist_sim_data_all_tiers(data_list, reco_list, param, bin_ends, titles, logscale=False, output='./plot.png'):
-    n = len(data_list)
-    height = math.ceil(n / 2)
-    fig = plt.figure(figsize=(12, 6 * height), constrained_layout=True)
-    ax_array = fig.subplots(2, height, squeeze=False)
-    if logscale:
-        fig.suptitle('Log Recon. Sim vs Data for ' + param + ' By Tier',
-                 fontsize=15)
-    else:
-        fig.suptitle('Linear Recon. Sim vs Data for ' + param + 'By Tier',
-                     fontsize=15)
-        
-    bin_centres = (bin_ends[1:] + bin_ends[:-1])/2
-    
-    row = 0
-    col = 0
-
-    for data, reco, title in zip(data_list, reco_list,
-                                       titles):
-        y_reco = np.histogram(reco[0], bin_ends, weights=reco[1])[0]
-        y_data = np.histogram(data[0], bin_ends)[0]
-
-        if logscale:
-            ax_array[row, col].semilogy()
-
-        ax_array[row, col].set_ylabel('Fraction of Events')
-        ax_array[row, col].errorbar(bin_centres, y_reco/sum(y_reco), yerr=reco[2]/sum(y_reco), label='Sim ' + title[1], capsize=3)
-        ax_array[row, col].errorbar(bin_centres, y_data/sum(y_data), yerr=data[1]/sum(y_data), label='Data ' + title[1], capsize=3)
-        #ax_array[row, col].set_ylim(0, .1)
-    
-        ax_array[row, col].set_title('Tier {}'.format(title[0]))
-        ax_array[row, col].set_xlabel(param + ' angle' + '$[\degree]$')
-        ax_array[row, col].legend(loc='lower center')
-    
-        col = col + 1
-        if col == 2:
-            col = 0
-            row = row + 1
-        
-    plt.savefig(output, transparent=True)
-            
-def ratio_sim_data_all_tiers(data_list, reco_list, param, bin_ends, titles, logscale=False, output='./plot.png'):
-    n = len(data_list)
-    height = math.ceil(n / 2)
-    fig = plt.figure(figsize=(12, 6 * height), constrained_layout=True)
-    ax_array = fig.subplots(2, height, squeeze=False)
-    if logscale:
-        fig.suptitle('Ratio Log Recon. Sim over Data for ' + param + ' By Tier',
-                 fontsize=15)
-    else:
-        fig.suptitle('Ratio Linear Recon. Sim over Data for ' + param + 'By Tier',
-                     fontsize=15)
-        
-    bin_centres = (bin_ends[1:] + bin_ends[:-1])/2
-    
-    row = 0
-    col = 0
-
-    for data, reco, title in zip(data_list, reco_list,
-                                       titles):
-        y_reco = np.histogram(reco[0], bin_ends, weights=reco[1])[0]
-        y_data = np.histogram(data[0], bin_ends)[0]
-
-        if logscale:
-            ax_array[row, col].set_yscale('symlog')
-            ax_array[row, col].set_ylim(0, 10)
-            ax_array[row, col].set_yticks([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-            ax_array[row, col].set_yticklabels(["1", "", "", "", "", "", "", "", "", "10"])
-        ax_array[row, col].set_title('Tier {}'.format(title[0]))
-        ax_array[row, col].set_xlabel(param + ' angle' + '$[\degree]$')
-        ax_array[row, col].set_ylabel('Ratio')
-        ax_array[row, col].errorbar(bin_centres, ((y_reco/sum(y_reco))/(y_data/sum(y_data))), yerr=.1, label='Ratio', capsize=3)
-        ax_array[row, col].legend(loc='lower center')
-    
-        col = col + 1
-        if col == 2:
-            col = 0
-            row = row + 1
-    plt.savefig(output, transparent=True)
