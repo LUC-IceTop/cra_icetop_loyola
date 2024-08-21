@@ -75,7 +75,7 @@ for run_year in reversed_run_years:
       
     i += 1
     # CHECK THIS LINE
-    if run_year in [2011, 2012, 2013, 2014]:
+    if run_year in [2011, 2012, 2013, 2014, 2015]:
         globals()['tier2'+str(run_year)] = globals()['s125_'+str(run_year)][np.where((globals()['stations_'+str(run_year)] >= tier2_min_station) & (globals()['stations_'+str(run_year)] < tier3_min_station))]
         display_tier2_cuts = '{} ≤ bins < {}'.format(tier2_min_station, tier3_min_station)
     else:
