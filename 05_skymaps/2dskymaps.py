@@ -9,6 +9,7 @@ import pylab
 
 DEGREE = pi / 180.
 
+#REVAMP
 
 def plot_map(skymap, title, label='', proj='C', dMin=None, dMax=None,
              filename=None, watermark='', half_map=False):
@@ -127,14 +128,14 @@ def top_hat_smooth(orig_map, radius, average=False):
     return new_map
 
 
-def relative_intensity(map, title, dec_min, dec_max, smoothing_angle, pngname,
+def relative_intensity(cmap, title, dec_min, dec_max, smoothing_angle, pngname,
                        min=None, max=None):
     """
     Plots 2D half map of relative intensity, masking and then smoothing, and
     saves it as a png file in a specified output directory.
     Scale can optionally be specified.
 
-    :param map: String path to fits file with  relative intensity.
+    :param map: String path to fits file with relative intensity.
     :param title: String title of plot.
     :param dec_min: float minimum declination for masking.
     :param dec_max: float maximum declination for masking.
@@ -145,7 +146,8 @@ def relative_intensity(map, title, dec_min, dec_max, smoothing_angle, pngname,
 
     :return: Saves png file of skymap.
     """
-    masked_map = mask_map(map, dec_min, dec_max)
+    
+    masked_map = mask_map(cmap, dec_min, dec_max)
     smoothed_map = top_hat_smooth(masked_map, smoothing_angle * DEGREE,
                                   average=True)
 
@@ -211,14 +213,15 @@ def tier_one(out_dir, dec_min=-90.0, dec_max=-35.0, smoothing_angle=20,
     Plots relative intensity and significance skymaps for tier one.
     Saves pngs in specified output directory.
     """
-    combined = hp.read_map("./fits/combined_t1_iteration20.fits.gz")
-    variance = hp.read_map("./fits/significance_t1_iteration20.fits.gz")
+    data, bg, combined = hp.read_map("./fits/combined_t1_iteration20.fits.gz", [0, 1, 2])
+    ri = data/bg - 1.
+    sig = hp.read_map("./fits/significance_t1_iteration20.fits.gz", 1)
     title = "Energy Tier 1: 310 TeV 2011-14"
     if range_ri[0] == 0 and range_ri[1] == 0:
-        relative_intensity(combined, title, dec_min, dec_max, smoothing_angle,
+        relative_intensity(ri, title, dec_min, dec_max, smoothing_angle,
                            out_dir + "t1_rel_int.png")
     else:
-        relative_intensity(combined, title, dec_min, dec_max, smoothing_angle,
+        relative_intensity(ri, title, dec_min, dec_max, smoothing_angle,
                            out_dir + "t1_rel_int.png", min=range_ri[0],
                            max=range_ri[1])
 
