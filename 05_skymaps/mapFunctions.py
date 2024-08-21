@@ -447,7 +447,7 @@ def getMap(inFiles, mapName=None, multi=False, smooth=0, stype='tophat',
             print(' --%s: %s' % (key, opts[key]))
 
     # Read in (multiple) input files
-    relint, data, bg = np.sum([hp.read_map(f, range(3), verbose=False)
+    data, bg, relint = np.sum([hp.read_map(f, range(3), verbose=False)
             for f in inFiles], axis=0)
 
     # Option for top-hat smoothing radius
@@ -469,7 +469,7 @@ def getMap(inFiles, mapName=None, multi=False, smooth=0, stype='tophat',
             m = (data-bg) / bg
     elif mapName == 'relerr':
         with np.errstate(invalid='ignore', divide='ignore'):
-            m = (data/bg) * sqrt(1/data + alpha/bg)
+            m = (relint+1) * sqrt(1/bg)
     elif mapName == 'fit':
         m = multifit(2, data, bg, **opts)
     else:

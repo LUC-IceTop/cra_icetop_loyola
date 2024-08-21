@@ -20,9 +20,16 @@ from mapFunctions import getMap
 
 #-------------------------------------------------------
 
+def getRelErr(f):
+    return np.sqrt(hp.read_map(f, 0, verbose=False)**2)
 
-
-def returnRI(bgmap, datamap, **opts):
+def getRelInt(f, rel_err=None, **opts):
+    
+    relint = getMap([f], mapName='relint', **opts)
+    if rel_err:
+        relerr = getRelErr(rel_err)
+    else:
+        relerr = getMap([f], mapName='relerr', **opts)
 
     # Setup right-ascension bins
     degree = np.pi / 180
@@ -31,35 +38,29 @@ def returnRI(bgmap, datamap, **opts):
     rabins = np.linspace(ramin, ramax, opts['nbins']+1)
 
     # Calculate phi for each pixel
-    npix  = len(bgmap)
+    npix  = len(relint)
     nside = hp.npix2nside(npix)
     theta, phi = hp.pix2ang(nside, range(npix))
+    phiBins = np.digitize(phi, rabins) - 1
+
 
     # Treat masked pixels as zeroes for weighting purposes
-    dataweight = np.where((datamap==hp.UNSEEN), 0, datamap)
-    bgweight = np.where((bgmap==hp.UNSEEN), 0, bgmap)
+    cut = (relint != hp.UNSEEN)
 
-    # Bin in right ascension
-    data = np.histogram(phi, bins=rabins, weights=dataweight)[0]
-    bg   = np.histogram(phi, bins=rabins, weights=bgweight)[0]
+    ri, sigmay = np.zeroes((2, opts['nbins']))
 
-    with np.errstate(invalid='ignore'):
-        ri = (data - bg) / bg
-        sigmay = np.sqrt(data * (bg + 1./20 * data)/bg**3)
+    for i in range(opts['nbins']):
+        phiCut = (phiBins == i)
+        c0 = cut * phiCut
+        ri[i] = np.mean(relint[c0])
+        # Error result from propagation of uncertainty on unweighted average
+        sigmay[i] = np.sqrt(np.sum(relerr[c0]**2))/c0.sum()
+
     dx = (ramax - ramin)/(2*opts['nbins'])
     ra = np.linspace(ramin+dx, ramax-dx, opts['nbins']) / degree
     sigmax = dx * np.ones(opts['nbins']) / degree
 
     return (ra, ri, sigmax, sigmay)
-
-
-def getRelInt(f, **opts):
-
-    # Get background and data maps
-    bgmap = getMap([f], mapName='bg', **opts)
-    datamap = getMap([f], mapName='data', **opts)
-    vals = returnRI(bgmap, datamap, **opts)
-    return vals
 
 # Flat line
 def flatLine(x, *p):
@@ -100,8 +101,75 @@ def gaussian(x, *p):
     denominator = np.sqrt(2)*p[2]
     return p[0] * np.exp(-(numerator/denominator)**2) + p[3]
 
+def gaussian_for_plotting(x, *p):
+    x0 = np.remainder((x + 90), 360)
+    numerator = x0 - (p[1] + 90)
+    denominator = np.sqrt(2)*p[2]
+    return p[0] * np.exp(-(numerator/denominator)**2) + p[3]
+
+# Function to fit the Gaussian and adjust the baseline
+def fit_gaussian_with_zero_integral(x_data, y_data, x_min, x_max, sigmay):
+    # Initial guess for amplitude, mean, stddev, and baseline
+    amplitude = -3.67
+    ra_cod = 94.1
+    width = 65.3
+    b = 1.58
+    p0 = [amplitude, ra_cod, width, b]
+    #x0 = np.remainder((x_data+ 90), 360)
+    # Wrapper for curve_fit that enforces the integral constraint
+    def constrained_gaussian(x, amplitude, ra_cod, width):
+
+        # Find the baseline that makes the integral zero
+        baseline = -quad(lambda x: amplitude * np.exp(-((x - ra_cod) / (np.sqrt(2)*width))**2), (x_min-90), (x_max-90))[0] / (x_max - x_min)
+   
+        p = [amplitude, ra_cod, width, baseline]
+        return gaussian(x, *p)
+    
+    # Fit the data
+    popt, pcov = curve_fit(constrained_gaussian, x_data, y_data, p0=p0[:-1], sigma = sigmay, absolute_sigma = True)
+    # Calculate the final baseline
+    baseline = -quad(lambda x: popt[0] * np.exp(-((x - popt[1]) / (np.sqrt(2) * popt[2]))**2), (x_min-90), (x_max-90))[0] / (x_max - x_min)
+    popt = np.append(popt, baseline)
+   # popt[1] = np.remainder((popt[1] - 90), 360) 
+    
+    # Adding the baseline term to the covariance matrix
+    amplitude, mean, stddev = popt[:-1]
+    
+    def integral_derivative_wrt_amplitude(x):
+        return np.exp(-((x - mean) ** 2) / (2 * stddev ** 2))
+    
+    def integral_derivative_wrt_mean(x):
+        return amplitude * np.exp(-((x - mean) ** 2) / (2 * stddev ** 2)) * (x - mean) / (stddev ** 2)
+    
+    def integral_derivative_wrt_stddev(x):
+        return amplitude * np.exp(-((x - mean) ** 2) / (2 * stddev ** 2)) * ((x - mean) ** 2) / (stddev ** 3)
+    
+    deriv_integral_amplitude = quad(integral_derivative_wrt_amplitude, x_min, x_max)[0]
+    deriv_integral_mean = quad(integral_derivative_wrt_mean, x_min, x_max)[0]
+    deriv_integral_stddev = quad(integral_derivative_wrt_stddev, x_min, x_max)[0]
+    
+    variance_baseline = (
+        (deriv_integral_amplitude / (x_max - x_min))**2 * pcov[0, 0] +
+        (deriv_integral_mean / (x_max - x_min))**2 * pcov[1, 1] +
+        (deriv_integral_stddev / (x_max - x_min))**2 * pcov[2, 2] +
+        2 * (deriv_integral_amplitude * deriv_integral_mean) / (x_max - x_min)**2 * pcov[0, 1] +
+        2 * (deriv_integral_amplitude * deriv_integral_stddev) / (x_max - x_min)**2 * pcov[0, 2] +
+        2 * (deriv_integral_mean * deriv_integral_stddev) / (x_max - x_min)**2 * pcov[1, 2]
+    )
+    
+    # Expand the covariance matrix to include the baseline term
+    pcov_expanded = np.zeros((4, 4))
+    pcov_expanded[:-1, :-1] = pcov
+    pcov_expanded[-1, -1] = variance_baseline
+    
+    
+    # Calculate the chi-squared value
+    chi_squared = np.sum((y_data - gaussian_for_plotting(x_data, *popt)) ** 2 / sigmay**2)
+    
+    return popt, pcov_expanded, chi_squared
+    
 # Best-fit parameters for gaussian
-def gaussianFit(x, y, sigmay):
+def simple_gaussian_fit(x, y, sigmay):
 
     # Guess at best fit parameters
     amplitude = -3
@@ -116,6 +184,28 @@ def gaussianFit(x, y, sigmay):
 
     return popt, pcov, chi2
 
+    #03282023 ADD SYSTEMATIC ERROR ESTIMATION
+def systematicErr(err_ri):
+    
+    # Load data
+    # High Energy Anti-Sidereal
+    #as_ra, as_ri, as_sigmay = np.loadtxt('./recofits/10YAntiSiderealHigh.txt', delimiter=',', unpack=True)
+
+    #Make histogram?
+    #count, bin_edge = np.histogram(y)
+    #bin_centre = (bin_edge[:-1] + bin_edge[1:])/2
+    #error = np.sqrt(count)
+
+    #plt.errorbar(bin_centre, count, xerr=0, yerr=error, marker='.')
+    #plt.savefig('./histogramas.png')
+
+    #print mean and st. dev. on histogram
+    mean = np.mean(err_ri)
+    stdev = np.std(err_ri)
+    #stdev = np.sqrt(np.mean(err_ri**2))
+    #print(mean)
+    #print(stdev)
+    return stdev
 
     
 ##=======================================================================##
@@ -169,7 +259,7 @@ if __name__ == "__main__":
     parser.add_option('--gaussian', dest='gaussian',
             default=False, action='store_true',
             help='Fit with a Gaussian function')
-    parser.add_option('--title', dest='title',    #Savannah
+    parser.add_option('--title', dest='title',    
             default = None,
             help='add plot title')
     parser.add_option('--sci', dest='sci_notation',
@@ -179,7 +269,10 @@ if __name__ == "__main__":
             default=None,
             help='Produce histogram of antisidereal data points to estimate systematic error')
     parser.add_option('--totalerr', dest='total_err', default=False, action='store_true', help='Show grey as total vs sys err')
-
+    parser.add_option('--relerr', dest="rel_err",
+            default=None,
+            help='File with relative errors')
+    
     # NOTE: I'd love to clean this up, but I think I just need to add to it. 
     # Need: scale (multiply by RI and show up on axis)
     parser.add_option('-S', '--scale', dest='scale',
@@ -209,6 +302,8 @@ if __name__ == "__main__":
         for key in sorted(opts.keys()):
             print(' --%s %s' % (key, opts[key]))
 
+    rel_err = options.rel_err
+    
     # Setup dictionaries for default values
     methods = {'sid':'sidereal', 'solar':'solar', 'anti':'anti-sidereal'}
     methods['ext'] = 'extended-sidereal'
@@ -338,7 +433,7 @@ if __name__ == "__main__":
 
             # Plot a smoothed version of the applied fit
             tOpt = {'color':'blue'}
-            smooth_x = np.linspace(ra[0], ra[-1], ra.size*20)
+            smooth_x = np.linspace(0, 360, 1000)
             ax.plot(smooth_x, multipole(smooth_x, *popt), **tOpt)
 
             # Calculate degrees of freedom and p-value
@@ -348,7 +443,7 @@ if __name__ == "__main__":
             # Text locations and values
             ymax = ax.get_ylim()[-1]
             delta = ymax/10
-            x0 = 100    # x-location (in degrees)
+            x0 = 350    # x-location (in degrees)
             y0 = 0 if method=='sid' else ymax
             # Adjust best-fit amplitude and phase to positive values
             amp = popt[0]
@@ -406,13 +501,13 @@ if __name__ == "__main__":
         if options.gaussian:
 
             # Calculate and plot gaussian fit
-            popt, pcov, chi2 = gaussianFit(ra, ri, sigmay)
+            popt, pcov, chi2 = fit_gaussian_with_zero_integral(ra, ri, 0, 360, sigmay)
             eopt = np.sqrt(np.diag(pcov))
 
             # Plot a smoothed version of the applied fit
             tOpt = {'color':'green'}
-            smooth_x = np.linspace(ra[0], ra[-1], ra.size*20)
-            ax.plot(smooth_x, gaussian(smooth_x, *popt), **tOpt)
+            smooth_x = np.linspace(0, 360, 1000)
+            ax.plot(smooth_x, gaussian_for_plotting(smooth_x, *popt), **tOpt)
 
             # Calculate degrees of freedom and p-value
             ndof = ra.size - popt.size
