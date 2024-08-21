@@ -229,7 +229,8 @@ def save_all_as_npy(indir, outdir, energies, it73=0):
     """
 
     dat = get_all_particles(indir, it73)
-    particles = [[[0 for i in range(11)] for j in range(4)] for k in range(4)]
+    # 11 outputs from get_array
+    particles = [[[0 for i in range(11)] for j in range(len(energies)+1)] for k in range(len(dat))]
 
     for i, particle in enumerate(dat):
         # Cut events where mczen/mcaz/lapzen/lapaz is nan [also eliminates for sp]
@@ -264,7 +265,7 @@ def save_all_as_npy(indir, outdir, energies, it73=0):
             if ind != 10:
                 particles[i][-1][ind] = arr[np.where((stations >= high))]
             else:
-                particles[i][i - 1][ind] = arr
+                particles[i][-1][ind] = arr
 
     # Save arrays
 
