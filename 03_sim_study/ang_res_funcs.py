@@ -338,7 +338,104 @@ def open_angle_p_fe_by_tier(mc_zen_p, reco_zen_p, mc_az_p, reco_az_p, mc_zen_fe,
 
     plot_vs_zenith_bytier(data, titles, "Opening Angle")
 
-""" Add methods that show first slice 68% interval"""
+def open_angle_p_fe_first_slice(mc_zen_p, reco_zen_p, mc_az_p, reco_az_p, mc_zen_fe, reco_zen_fe, mc_az_fe, reco_az_fe, binends, reco_name, cuts):
+    """ This is more hard coded (2 by 2 as opposed to length of data list. Should be updated to work for variable number of tiers."""
+    fig = plt.figure(figsize=(16, 8), constrained_layout=True)
+    ax_array = fig.subplots(2, 2, squeeze=False)
+    fig.suptitle(r'Opening Angle Distribution for 0 to $16\degree$ Zenith for Each Tier', fontsize = 15)
+
+    x_ind = 0
+    y_ind = 0
+
+    ranges = [15, 6, 3, 3]
+    for (reco_prot_zen, true_prot_zen, reco_prot_az, true_prot_az, reco_fe_zen, 
+         true_fe_zen, reco_fe_az, true_fe_az, bin_ends, reconstruction, ran, cut) in zip(reco_zen_p, mc_zen_p, reco_az_p,
+                                                                               mc_az_p, reco_zen_fe, mc_zen_fe, 
+                                                                            reco_az_fe, mc_az_fe, binends, reco_name, ranges, cuts):
+        dlamda_p = np.deg2rad(reco_prot_az-true_prot_az)
+        phi1_p = np.deg2rad(90-reco_prot_zen)
+        phi2_p = np.deg2rad(90-true_prot_zen)
+        opening_angle_p = np.rad2deg(np.arccos(np.sin(phi1_p)*np.sin(phi2_p) + np.cos(phi1_p)*np.cos(phi2_p)*np.cos(dlamda_p)))
+    
+        # The simulation does not include any zenith values above 65 degrees, so we will cut out values that get too high
+        y_p = np.delete(opening_angle_p, np.argwhere(reco_prot_zen>=cut))
+        x_p = np.delete(reco_prot_zen, np.argwhere(reco_prot_zen>=cut))
+    
+        #bins = bins
+        #Get center of bins
+        bins  = (bin_ends[1:] + bin_ends[:-1])/2
+        xerr = (bin_ends[1:] - bin_ends[:-1])/2
+    
+        # Now we need to bin our events in order to get an median opening angle (5 degrees/bin)
+        binnum_p = np.digitize(x_p, bin_ends, right=False) - 1 # Get bin number for each event 
+        dzen_binned_p = [[] for i in range(len(bins))] # create empty array with 1 list for each bin 
+        for i in range(len(y_p)):
+            dzen_binned_p[binnum_p[i]].append(y_p[i]) # Fill bins with opening angles
+        
+        yave_p = []
+        yler_p = []
+        yher_p = []
+        for b in dzen_binned_p:
+            yave_p.append(np.median(b))
+            yler_p.append(np.quantile(b, .16))
+            yher_p.append(np.quantile(b, .84))
+        
+        yerr_p=[yler_p[0], yher_p[0]]
+        proton_slice1 = dzen_binned_p[0]
+        
+        dlamda_fe = np.deg2rad(reco_fe_az-true_fe_az)
+        phi1_fe = np.deg2rad(90-reco_fe_zen)
+        phi2_fe = np.deg2rad(90-true_fe_zen)
+        opening_angle_fe = np.rad2deg(np.arccos(np.sin(phi1_fe)*np.sin(phi2_fe) + np.cos(phi1_fe)*np.cos(phi2_fe)*np.cos(dlamda_fe)))
+    
+        # The simulation does not include any zenith values above 65 degrees, so we will cut out values that get too high
+        y_fe = np.delete(opening_angle_fe, np.argwhere(reco_fe_zen>=cut))
+        x_fe = np.delete(reco_fe_zen, np.argwhere(reco_fe_zen>=cut))
+        #bins = bins
+        #Get center of bins
+        #bins  = (bin_ends[1:] + bin_ends[:-1])/2
+        #xerr = (bin_ends[1:] - bin_ends[:-1])/2
+    
+        # Now we need to bin our events in order to get an median opening angle (5 degrees/bin)
+        binnum = np.digitize(x_fe, bin_ends, right=False) - 1 # Get bin number for each event 
+        dzen_binned_fe = [[] for i in range(len(bins))] # create empty array with 1 list for each bin 
+        for i in range(len(y_fe)):
+            dzen_binned_fe[binnum[i]].append(y_fe[i]) # Fill bins with opening angles
+        
+        yave_fe = []
+        yler_fe = []
+        yher_fe = []
+        for b in dzen_binned_fe:
+            yave_fe.append(np.median(b))
+            yler_fe.append(np.quantile(b, .16))
+            yher_fe.append(np.quantile(b, .84))
+
+        yerr_fe=[yler_fe[0], yher_fe[0]]
+        iron_slice1 = dzen_binned_fe[0]
+        ax_array[x_ind, y_ind].hist(proton_slice1, bins=int(ran/15*100), range=[0,ran], label='Proton', color='red', histtype='step')
+        ax_array[x_ind, y_ind].hist(iron_slice1, bins=int(ran/15*100), range=[0,ran], label='Iron', color='blue', histtype='step')
+        
+        ax_array[x_ind, y_ind].vlines(yave_p[0], 0, 1, transform=ax_array[x_ind, y_ind].get_xaxis_transform(), linestyle='solid', colors='r')
+        ax_array[x_ind, y_ind].vlines(yave_fe[0], 0, 1, transform=ax_array[x_ind, y_ind].get_xaxis_transform(), linestyle='solid', colors='b')
+        
+        ax_array[x_ind, y_ind].vlines(yerr_p, 0, 1, transform=ax_array[x_ind, y_ind].get_xaxis_transform(), linestyle='dashed', colors='r')
+        ax_array[x_ind, y_ind].vlines(yerr_fe, 0, 1, transform=ax_array[x_ind, y_ind].get_xaxis_transform(), linestyle='dashed', colors='b')
+        
+        ax_array[x_ind, y_ind].legend(loc='lower right')
+        ax_array[x_ind, y_ind].set_ylabel('Count')
+        ax_array[x_ind, y_ind].set_xlabel(r'$Opening\;angle\;[\degree]$ ' + reconstruction)
+        #ax_array[x_ind, y_ind].set_ylim()
+        ax_array[x_ind, y_ind].set_xlim(0, ran)
+        ax_array[x_ind, y_ind].set_xticks(np.arange(0, ran, ran/10))
+        locs = ax_array[x_ind, y_ind].get_yticks()
+        ax_array[x_ind, y_ind].set_yticklabels(np.round(locs/len(proton_slice1), 2))
+        #ax_array[x_ind, y_ind].set_yscale('log')
+                
+        y_ind = y_ind + 1
+        if(y_ind == 2):
+            y_ind = 0
+            x_ind = x_ind + 1
+
 
 """
 Weighted quantile
