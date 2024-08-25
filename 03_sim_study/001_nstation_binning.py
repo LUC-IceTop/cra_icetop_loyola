@@ -9,15 +9,11 @@ import pandas as pd
 import tables
 import simweights
 
-
 # There are 4 simulations in the folder
-# dataset 12360 PPlus       = 2212
-# dataset 12630 He4Nucleus  = 1000020040
-# dataset 12631 O16Nucleus  = 1000080160
-# dataset 12362 Fe56Nucleus = 1000260560
-fnum = [12360, 12630, 12631, 12362]  # file number
-ptype = [2212, 1000020040, 1000080160, 1000260560]  # particle type
-# In order: proton, helium, oxygen, iron
+fnum_dict = {2012: [12360, 12630, 12631, 12362],
+             2015, [20174, 20178, 20179, 20180],
+             2018, [22570, 22580, 22583, 22586]}
+# run_year : file numbers (in order: proton, helium, oxygen, iron)
 
 # Define flux model used for icecube weighting
 flux = simweights.GaisserH4a_IT()
@@ -43,7 +39,7 @@ fe-  = Iron
 """
 
 
-def get_array(indir, j, it73c=0):
+def get_array(indir, file, it73c=0):
     """Reads hdf5 file that contains simulation information for one particle,
     applies specified permutation of IT73 quality cuts, and returns a list
     with the true and reconstructed energy, angle and number of stations.
@@ -73,7 +69,7 @@ def get_array(indir, j, it73c=0):
         See naming conventions above for further clarification
     """
     # Read file
-    f = h5py.File(indir + '/l3_{}.hdf5'.format(fnum[j]), 'r')
+    f = h5py.File(indir + '/l3_{}.hdf5'.format(file, 'r')
 
     # Save stations
     s = np.array(f['NStations']['value'])
@@ -100,13 +96,15 @@ def get_array(indir, j, it73c=0):
 
     # Get weighting from icecube (1 using mcprimary zenith and 1 for each
     # reconstructed zenith)
-    file_obj = tables.open_file(indir+'/l3_{}.hdf5'.format(fnum[j]), "r")
+    file_obj = tables.open_file(indir+'/l3_{}.hdf5'.format(file, "r")
     weighter = simweights.IceTopWeighter(file_obj)
     weights = weighter.get_weights(flux)
     
     mcw = weights
     lapw = weights
     spw = weights
+    # No point in having three weights
+    # Should they be calculated differently or do we just use MC?
 
     # Store array of number of stations activated by proton events
     stations = np.array(f['NStations']['value'])
@@ -139,7 +137,7 @@ def get_array(indir, j, it73c=0):
     return output
 
 
-def get_all_particles(indir, it73=0):
+def get_all_particles(indir, fnum, it73=0):
     """
     Gets list of parameters for all particles given input directory and index
     of permutation for IT73 Quality Cuts.
@@ -163,13 +161,13 @@ def get_all_particles(indir, it73=0):
     """
 
     particles = []
-    for j in range(len(fnum)):
-        particle = get_array(indir, j, it73)
+    for file in fnum:
+        particle = get_array(indir, file, it73)
         particles.append(particle)
     return particles
 
 
-def get_prot_iron(indir, it73=0):
+def get_prot_iron(indir, fnum, it73=0):
     """
     Gets list of parameters for proton and iron given input directory and index
     of permutation for IT73 Quality Cuts.
@@ -192,12 +190,12 @@ def get_prot_iron(indir, it73=0):
         [[Proton], [Iron]]
     """
 
-    arr = get_all_particles(indir, it73)
+    arr = get_all_particles(indir, fnum, it73)
     # Proton, Iron
     return [arr[0], arr[3]]
 
 
-def save_all_as_npy(indir, outdir, energies, it73=0):
+def save_all_as_npy(indir, outdir, energies, run_year, it73=0):
     """
     # Given an input directory containing hdf5 simulation files, for each of
     all four particles: apply specified IT73 Quality Cuts, bin by stations
@@ -216,6 +214,9 @@ def save_all_as_npy(indir, outdir, energies, it73=0):
         low energy bin for 3 <= number of stations < 5, and a high energy bin
         for 5 <= number of stations
 
+    :param run_year: int
+        There are Monte Carlo datasets for each particle for the 2012, 2015 and 2018 run year
+        
     :param it73: Integer from 0 to 2, optional
         Index of IT73 Quality Cuts Permutation
         0 -> No quality cuts [what we used in our analysis]
@@ -224,8 +225,9 @@ def save_all_as_npy(indir, outdir, energies, it73=0):
 
     :return: None
     """
+    fnum = fnum_dict[run_year]
 
-    dat = get_all_particles(indir, it73)
+    dat = get_all_particles(indir, fnum, it73)
     # 11 outputs from get_array
     particles = [[[0 for i in range(11)] for j in range(len(energies)+1)] for k in range(len(dat))]
 
@@ -304,6 +306,8 @@ if __name__ == "__main__":
     parser.add_argument("-e", "--energies", dest='energies', type=str,
                         default='[[3, 5], [5, 9], [9, 16]]',
                         help="NStation boundaries for each energy tier/band")
+    parser.add_argument("-y", "--year", dest="year", type=int, default=2012, 
+                        help="MC RY to process: 2012, 2015 or 2018")
     args = parser.parse_args()
         
     # Parse energies as list of lists
@@ -316,4 +320,8 @@ if __name__ == "__main__":
             print(f"Error: The provided list of lists '{args.energies}' is not valid.")
             sys.exit(1)
 
-    save_all_as_npy(args.simulation_directory, args.output, bins, args.it73)
+    # Validate year argument
+    if args.year not in [2012, 2015, 2018]:
+        print(f"Error: {args.year} does not have an IT MC dataset. Please enter 2012, 2015 or 2018.")
+        
+    save_all_as_npy(args.simulation_directory, args.output, bins, args.year, args.it73)
