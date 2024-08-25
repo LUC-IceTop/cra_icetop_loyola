@@ -69,7 +69,7 @@ def get_array(indir, file, it73c=0):
         See naming conventions above for further clarification
     """
     # Read file
-    f = h5py.File(indir + '/l3_{}.hdf5'.format(file, 'r')
+    f = h5py.File(indir + '/l3_{}.hdf5'.format(file, 'r'))
 
     # Save stations
     s = np.array(f['NStations']['value'])
@@ -269,8 +269,10 @@ def save_all_as_npy(indir, outdir, energies, run_year, it73=0):
     # Save arrays
 
     # For naming reference
+    Energies = []
+    for en_ind in range(1, len(energies)+2):
+        Energies.append("T{}".format(en_ind))       
     Particles = ["Proton", "Helium", "Oxygen", "Iron"]
-    Energies = ["T1", "T2", "T3", "T4"]
     Origin = ["MC", "Laputop", "ShowerPlane"]
     Parameters = ["Zenith", "Azimuth", "Weights"]
 
