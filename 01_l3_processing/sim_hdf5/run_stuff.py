@@ -1,5 +1,10 @@
 import os, fileinput, sys
 
+fnum_dict = {2012: [12360, 12630, 12631, 12362],
+             2015, [20174, 20178, 20179, 20180],
+             2018, [22570, 22580, 22583, 22586]}
+
+particles = ["p", "He", "O", "Fe"]
 
 def runSim(particle, fnum):
     for line in fileinput.input('steeringcard_dstsim',inplace=1):
@@ -11,13 +16,7 @@ def runSim(particle, fnum):
     print('running for', particle, fnum)
 
 
-#p 12360
-#He 12630 Me
-#O 12631 Me
-#Fe 362
-
-runSim("p", 12360)
-runSim("He", 12630)
-runSim("O", 12631)
-runSim("Fe", 12362)
-
+for year in fnum_dict.keys():
+    fnum = fnum_dict[year]
+    for j in len(fnum):
+        runSim(particles[j], fnum[j])

@@ -26,15 +26,15 @@ parser.add_argument('infile', nargs='*')
 #parser.add_argument('outfile')
 opts = parser.parse_args()
 
-
-particle = str(sys.argv[1])
-fnum = int(sys.argv[2])
+year = str(sys.argv[1])
+particle = str(sys.argv[2])
+fnum = int(sys.argv[3])
 
 #physics = glob("/data/exp/IceCube/"+year+"/filtered/level2/*/Level2_IC86_corsika_icetop.010410.*.i3.bz2")
 #physics = glob("/data/ana/CosmicRay/IceTop_level3/sim/IC86.2012/SIBYLL2.1/He/12630_v1s/Level3_IC86.2012_SIBYLL2.1_He_12630*.i3.*")
 
 #change this line if you are changing which simulation you are using
-physics = glob("/data/ana/CosmicRay/IceTop_level3/sim/IC86.2012/SIBYLL2.1/"+particle+"/"+str(fnum)+"_v1s/Level3_IC86.2012_SIBYLL2.1_"+particle+"_"+str(fnum)+"*.i3.*")
+physics = glob("/data/ana/CosmicRay/IceTop_level3/sim/IC86."+year+"/SIBYLL2.3/"+particle+"/"+str(fnum)+"_v1s/Level3_IC86."+year+"_SIBYLL2.3_"+particle+"_"+str(fnum)+"*.i3.*")
 
 #physics = glob("/data/ana/CosmicRay/IceTop_level3/exp/IC86."+str(run_year)+"/"+str(year)+"/*/Level3_IC86."+str(run_year)+"*0_Subrun*.i3.*")
 
