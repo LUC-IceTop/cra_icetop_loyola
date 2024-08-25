@@ -96,8 +96,8 @@ def get_array(indir, file, it73c=0):
 
     # Get weighting from icecube (1 using mcprimary zenith and 1 for each
     # reconstructed zenith)
-    file_obj = tables.open_file(indir+'/l3_{}.hdf5'.format(file, "r")
-    weighter = simweights.IceTopWeighter(file_obj)
+        #^?? We get one weighting here?
+    weighter = simweights.IceTopWeighter(f)
     weights = weighter.get_weights(flux)
     
     mcw = weights
