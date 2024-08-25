@@ -8,8 +8,7 @@ import h5py, glob
 import pandas as pd
 import tables
 import simweights
-from icecube.weighting import weighting
-from icecube.weighting.fluxes import GaisserH4a_IT
+
 
 # There are 4 simulations in the folder
 # dataset 12360 PPlus       = 2212
