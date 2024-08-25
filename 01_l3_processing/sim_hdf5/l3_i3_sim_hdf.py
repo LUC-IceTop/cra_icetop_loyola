@@ -70,6 +70,7 @@ if len(physics)!=0:
                     #Output=opts.outfile, 
                     Output=temp_outfile,
                     Keys=[
+                        'I3TopInjectorInfo',
                         'I3EventHeader',
                         'QFilterMask',
                         'Laputop',
