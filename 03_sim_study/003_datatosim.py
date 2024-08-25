@@ -18,8 +18,10 @@ def load_simulation(input_directory, param, tier, model):
     all_part = []
     weights = []
     for p in particles:
-        if param == "Stations" or param == "Energy":
+        if param == "Stations":
             all_part.append(np.load(input_directory+'/{}-{}-{}.npy'.format(p, tier, param)))
+        elif param == "Energy":
+            all_part.append(np.load(input_directory+'/{}-{}-MC-{}.npy'.format(p, tier, param)))
         else:
             all_part.append(np.load(input_directory+'/{}-{}-{}-{}.npy'.format(p, tier, model, param)))
         weights.append(np.load(input_directory+'/{}-{}-{}-Weights.npy'.format(p, tier, model)))
