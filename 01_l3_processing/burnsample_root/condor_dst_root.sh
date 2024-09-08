@@ -6,7 +6,7 @@
 #eval combo
 
 # Define the output directory
-OUTPUT_DIR="OUTPUT_DIR"
+OUTPUT_DIR="/data/user/gagrawal/unblind_root/"
 
 TMPDIR=$(mktemp -d)
 cp l3_i3_to_root_day.py $TMPDIR
