@@ -16,7 +16,7 @@ for run_year in range(2011, 2022):
 
 
     for year in [run_year+1]:
-        for month in range(1, 6):
+        for month in range(1, 8):
 	    for day in range(1, 32):
 	        for line in fileinput.input('steeringcard_dst',inplace=1):
 		    arg_string = str(run_year)+' '+str(year)+' '+str(month)+' '+str(day)
