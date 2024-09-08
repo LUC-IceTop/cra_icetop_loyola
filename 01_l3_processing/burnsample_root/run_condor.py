@@ -11,18 +11,16 @@ for run_year in range(2011, 2022):
                     if 'arguments' in line:
                         line = line.replace(line,'arguments = '+arg_string+'\n')
                     sys.stdout.write(line)
-		os.system('condor_submit steeringcard_dstroot')
-		print('running for', run_year, year, month, day)
-
-
+                os.system('condor_submit steeringcard_dstroot')
+                print('running for', run_year, year, month, day)
+    
     for year in [run_year+1]:
         for month in range(1, 8):
-	    for day in range(1, 32):
-	        for line in fileinput.input('steeringcard_dst',inplace=1):
-		    arg_string = str(run_year)+' '+str(year)+' '+str(month)+' '+str(day)
-		    if 'arguments' in line:
-		        line = line.replace(line,'arguments = '+arg_string+'\n')
-		    sys.stdout.write(line)
-		os.system('condor_submit steeringcard_dstroot') 
-		print('running for', run_year, year, month, day)
-
+            for day in range(1, 32):
+                for line in fileinput.input('steeringcard_dstroot',inplace=1):
+                    arg_string = str(run_year)+' '+str(year)+' '+str(month)+' '+str(day)
+                    if 'arguments' in line:
+                        line = line.replace(line,'arguments = '+arg_string+'\n')
+                    sys.stdout.write(line)
+                os.system('condor_submit steeringcard_dstroot')
+                print('running for', run_year, year, month, day)
