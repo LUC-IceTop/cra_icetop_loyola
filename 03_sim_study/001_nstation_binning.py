@@ -13,6 +13,8 @@ import simweights
 fnum_dict = {2012: [12360, 12630, 12631, 12362],
              2015, [20174, 20178, 20179, 20180],
              2018, [22570, 22580, 22583, 22586]}
+
+pars = ["p", "He", "O", "Fe"]
 # run_year : file numbers (in order: proton, helium, oxygen, iron)
 
 # Define flux model used for icecube weighting
@@ -137,7 +139,7 @@ def get_array(indir, file, it73c=0):
     return output
 
 
-def get_all_particles(indir, fnum, it73=0):
+def get_all_particles(indir, year, it73=0):
     """
     Gets list of parameters for all particles given input directory and index
     of permutation for IT73 Quality Cuts.
@@ -161,8 +163,8 @@ def get_all_particles(indir, fnum, it73=0):
     """
 
     particles = []
-    for file in fnum:
-        particle = get_array(indir, file, it73)
+    for p in pars:
+        particle = get_array(indir, str(year)+'_'+p, it73)
         particles.append(particle)
     return particles
 
@@ -225,9 +227,9 @@ def save_all_as_npy(indir, outdir, energies, run_year, it73=0):
 
     :return: None
     """
-    fnum = fnum_dict[run_year]
+    #fnum = fnum_dict[run_year]
 
-    dat = get_all_particles(indir, fnum, it73)
+    dat = get_all_particles(indir, run_year, it73)
     # 11 outputs from get_array
     particles = [[[0 for i in range(11)] for j in range(len(energies)+1)] for k in range(len(dat))]
 
