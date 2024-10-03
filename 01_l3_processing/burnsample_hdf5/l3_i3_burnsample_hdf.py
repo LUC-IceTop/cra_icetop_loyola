@@ -1,3 +1,5 @@
+#!/bin/sh /cvmfs/icecube.opensciencegrid.org/py3-v4.1.0/icetray-start
+#METAPROJECT: combo/stable
 from icecube import icetray, dataclasses, simclasses, dataio, tableio, toprec
 
 from icecube.hdfwriter import I3HDFWriter
@@ -21,16 +23,25 @@ def add_nstations(frame, pulses='IceTopHLCSeedRTPulses_SnowUnAttenuated'):
 
 
 parser = ArgumentParser(description=__doc__)
-parser.add_argument('infile', nargs='*')
+parser.add_argument('outdir', type=str)
+parser.add_argument('run_year', type=str)
+parser.add_argument('year', type=str)
+parser.add_argument('month', type=str)
+#parser.add_argument('infile', nargs='*')
 #parser.add_argument('outfile')
 opts = parser.parse_args()
 
+'''
 run_year = int(sys.argv[1])
 year = int(sys.argv[2])
 month = int(sys.argv[3])
 
 #physics = glob("/data/exp/IceCube/"+year+"/filtered/level2/*/Level2_IC86_corsika_icetop.010410.*.i3.bz2")
-physics = glob("/data/ana/CosmicRay/IceTop_level3/exp/IC86."+str(run_year)+"_pass2_v0*/"+str(year)+"/"+str(month).zfill(2)+"*/*/Level3_IC86."+str(run_year)+"*0_Subrun*.i3.*") #notice that this only takes events ending in 0 to only gather 10% of events
+'''
+physics = glob("/data/ana/CosmicRay/IceTop_level3/exp/IC86.{run_year}_pass2_v0*/{cal_year}/{month}*/*/Level3_IC86.{run_year}*0_Subrun*.i3.*".format(run_year = opts.run_year,
+                                                                                                                                                   cal_year = opts.year,
+                                                                                                                                                   month = opts.month))
+#notice that this only takes events from runs ending in 0 to only gather 10% of events
 
 #physics = glob("/data/ana/CosmicRay/IceTop_level3/exp/IC86."+str(run_year)+"/"+str(year)+"/*/Level3_IC86."+str(run_year)+"*0_Subrun*.i3.*")
 
@@ -47,7 +58,7 @@ if len(physics)==0:
 #gcd = '/home/mplum/GeoCalibDetectorStatus_2012.56063_V1_OctSnow_scint.i3'
 subevent = 'IceTopSplit'
 
-temp_outfile = 'l3_data_run_config_'+str(run_year)+'_year_'+str(year)+'_'+str(month).zfill(2)+'.hdf5'
+temp_outfile = opts.outdir+'l3_data_run_config_{run_year}_year_{cal_year}_{month}.hdf5'.format(run_year = opts.run_year, cal_year = opts.year, month = opts.month)
 if len(physics)!=0:
 	tray = I3Tray()
 	#tray.AddModule('I3Reader', 'reader', filenamelist=opts.infile)
