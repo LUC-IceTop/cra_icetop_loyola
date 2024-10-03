@@ -13,6 +13,7 @@ from matplotlib.collections import PatchCollection
 from matplotlib.container import ErrorbarContainer
 from scipy.optimize import curve_fit
 from scipy import stats
+from scipy.integrate import quad
 from mapFunctions import getMap
 
 #rc('xtick', labelsize=18)
@@ -47,7 +48,7 @@ def getRelInt(f, rel_err=None, **opts):
     # Treat masked pixels as zeroes for weighting purposes
     cut = (relint != hp.UNSEEN)
 
-    ri, sigmay = np.zeroes((2, opts['nbins']))
+    ri, sigmay = np.zeros((2, opts['nbins']))
 
     for i in range(opts['nbins']):
         phiCut = (phiBins == i)
