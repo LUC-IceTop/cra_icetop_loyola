@@ -1,13 +1,22 @@
 Instructions to process level3 files into .hdf5 and .root files for later analysis
 
-Step 0: Editing the code
-- Edit the output directories in the condor wrapper shell scripts in each directory.
-- Edit the output, log, and scratch destination directories in the steeringcards in each directory.
+For all steps, run in condor/submitter.
+Step 1: Burnsample to HDF5
+In 01_l3_processing, run CVMFS v4.1.0:
 
-Step 1: Running
-- We produce .hdf5 files of the burnsample in order to do the snow accumulation study. 
- * Run ./burnsample_hdf5/run_condor.py in icetray in condor.
-- We produce .hdf5 files of the simulation in order to produce simulation plots.
- * Run ./sim_hdf5/run_stuff.py in icetray in condor.
-- We produce .root files of the burnsample in order to do the anisotropy analysis.
- * Run ./burnsample_root/run_condor.py in icetray in condor.
+Then run:
+python process_data_dag.py --hdf [output dir] 
+
+Step 2: Burnsample to ROOT
+In 01_l3_processing, run CVMFS v4.1.0:
+
+Then run:
+python process_data_dag.py --root [output dir] 
+
+The two steps can be combined (e.g. process_data_dag.py --hdf [dir1] --root [dir2]) or run for specific years (e.g. process_data_dag.py -y 2011 2013).
+
+Step 3: Simulation to HDF5
+In 01_l3_processing/sim_hdf5, run CVMFS v4.1.0:
+
+Then run:
+python run_condor.py -o [output dir] -l [log dir] 

@@ -6,31 +6,33 @@ Here is a link to a wiki page explaining the instructions:
 https://wiki.icecube.wisc.edu/index.php/IceTop_Cosmic_Ray_Anisotropy_Analysis_Code_Instructions
 
 01_l3_processing/
-    burnsample_hdf/
-        condor_dst_burnsample.sh        Moves temp files to out dir
-        l3_i3_burnsample_hdf.py         Burnsample .l3 -> .hdf5
-        run_condor.py                   Runs for specific time frames
-        steeringcardhdf_dstburnsample   Steering card produced by run_stuff.py
-    burnsample_root/
-        condor_dst_root.sh         Moves temp files to out dir
-        l3_i3_to_root_day.py       Burnsample .l3 -> .hdf5
-        run_condor.py              Runs for specific time frames
-        steeringcardhdf_dstroot    Steering card produced by run_stuff.py
+    npx4/                      Creates DAG files
+    on_hold.sh                 Script that automatically runs when job is held
+    process_data_dag.py        Creates and submits DAG for data .l3 processing
+    l3_i3_burnsample_hdf.py    Burnsample .l3 -> .hdf5
+    l3_i3_to_root_day.py       Data .l3 -> .hdf5
     sim_hdf/
-        condor_dst_hdf.sh          Moves temp files to out dir
         l3_i3_sim_hdf.py           Simulation 2012 v1s .l3 -> .hdf5
         run_stuff.py               Runs for specific time frames
         steeringcardhdf_dstsim     Steering card produced by run_stuff.py
     README.txt
 
 02_snow_accumulation/
+    run_condor.py                  Edits steeringcard_dst for each run year and submits jobs to condor
+    steeringcard_dst               Steering card for processing burnsample hdf5 -> .npy
+    s125_arrays.py                 Given indir, outdir and run year, script saves specific params as .npy arrays
+    s125_arrays.sh                 Shell script that moves temporary output from s125_arrays.py to correct output dir
     s125.py                        Produces s125 log histograms for the snow accumulation study
+    s125.ipynb                     Same as s125.py, but in jupyter notebook form
 
 03_sim_study/
     arrays/                        Dir where .npy arrays are stored
     001_nstation_binning.py        Python script bins sim events and saves as .npy
     002_loading_graphs.ipynb       Loads .npy arrays and produces simulation plots
+    003_datatosim.py               Produces plots that compare distributions between 2012 burnsample and 2012 MC
     ang_res_funcs.py               Contains helper functions for 002
+    compare
+    h5keys.ipynb                   Jupyter notebook that loads keys from hdf5 files to see what is included
     README.txt                     Instructions
 
 05_skymaps/
@@ -38,6 +40,7 @@ https://wiki.icecube.wisc.edu/index.php/IceTop_Cosmic_Ray_Anisotropy_Analysis_Co
     output/                        Default output dir for skymap and 1d proj pngs
     1d_proj.py                     Python script produces a 1D proj on RA for a .fits.gz file
     2dskymaps.py                   Python script produces 2D skymaps for rel. int. and sig. 
+    2dskymaps.ipynb                Interactive jupyter notebook for loading 2D skymaps of rel. int. and sig.
     alltiers.sh                    Shell script runs 1d_proj.py for all four energy tiers.
     mapFunctions.py                Contains helper functions for 1d_proj.py
     README.txt                     Instructions
