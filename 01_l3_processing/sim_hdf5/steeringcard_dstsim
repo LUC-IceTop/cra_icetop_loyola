@@ -1,6 +1,6 @@
-Executable = condor_dst_sim.sh
+Executable = l3_i3_sim_hdf.py
 
-arguments = run_year particle_type particle_number
+arguments = output_filename input_filepath
 
 output = /data/user/@USER_DIR@/log/condor.out.$(ClusterId)
 error = /data/user/@USER_DIR@/log/condor.err.$(ClusterId)
