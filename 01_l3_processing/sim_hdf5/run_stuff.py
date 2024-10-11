@@ -9,7 +9,7 @@ pars = ["p", "He", "O", "Fe"]
 
 def runSim(outfile, filepath):
     for line in fileinput.input('steeringcard_dstsim',inplace=1):
-	    arg_string = outfile + filepath
+	    arg_string = outfile + ' '  + filepath
 	    if 'arguments' in line:
 	        line = line.replace(line, 'arguments = '+arg_string+'\n')
 	    sys.stdout.write(line)

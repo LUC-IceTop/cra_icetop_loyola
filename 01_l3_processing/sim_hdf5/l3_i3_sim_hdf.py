@@ -25,7 +25,7 @@ def add_nstations(frame, pulses='IceTopHLCSeedRTPulses_SnowUnAttenuated'):
 
 parser = ArgumentParser(description=__doc__)
 parser.add_argument('fname', type=str)
-parser.add_argument('infile', type=str)
+parser.add_argument('infile', nargs='+', type=str)
 #parser.add_argument('outfile')
 opts = parser.parse_args()
 
@@ -35,7 +35,14 @@ opts = parser.parse_args()
 
 #change this line if you are changing which simulation you are using
 #physics = glob("/data/ana/CosmicRay/IceTop_level3/sim/IC86."+year+"/SIBYLL2.3*/"+particle+"/"+str(fnum)+"_v1s/Level3_IC86."+year+"_SIBYLL2.3_"+particle+"_"+str(fnum)+"*.i3.*")
-physics = glob(opts.infile)
+
+#Parse eitehr wildcard or list of files:
+physics = []
+for pattern in opts.infile:
+    file_list = glob(pattern)
+    physics.extend(file_list)
+
+#physics = glob(opts.infile)
 
 #physics = glob("/data/ana/CosmicRay/IceTop_level3/exp/IC86."+str(run_year)+"/"+str(year)+"/*/Level3_IC86."+str(run_year)+"*0_Subrun*.i3.*")
 
