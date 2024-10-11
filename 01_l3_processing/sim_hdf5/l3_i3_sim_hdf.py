@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/bin/sh /cvmfs/icecube.opensciencegrid.org/py3-v4.1.0/icetray-start
+#METAPROJECT: combo/stable
 from icecube import icetray, dataclasses, simclasses, dataio, tableio, toprec
 
 from icecube.hdfwriter import I3HDFWriter
