@@ -1,8 +1,9 @@
 import os, fileinput, sys
+import argparse
 
 fnum_dict = {2012: ("SIBYLL2.1", [12360, 12630, 12631, 12362]),
-             2015, ("SIBYLL2.1", [20174, 20178, 20179, 20180]),
-             2018, ("SIBYLL2.3d", [22570, 22580, 22583, 22586])}
+             2015: ("SIBYLL2.1", [20174, 20178, 20179, 20180]),
+             2018: ("SIBYLL2.3d", [22570, 22580, 22583, 22586])}
 
 pars = ["p", "He", "O", "Fe"]
 
@@ -13,7 +14,7 @@ def runSim(outfile, filepath):
 	        line = line.replace(line, 'arguments = '+arg_string+'\n')
 	    sys.stdout.write(line)
     os.system('condor_submit steeringcard_dstsim')
-    print('running for', particle, fnum)
+    print('running for', filepath)
 
 
 # Main method

@@ -87,7 +87,7 @@ if __name__ == "__main__":
                         default= [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022],
                         help="Calendar years to run (default all 2011-22).")
     #parser.add_argument("-m", "--memory", dest="memory", type=int, default=4000, help="Amount of MB to request (int).")
-    parser.add_argument("--all_data", dest="all_data", type=bool, default=False, help="Run for all data instead of burnsample")
+    parser.add_argument("--all_data", dest="all_data", action=store_true, default=False, help="Run for all data instead of burnsample")
     args = parser.parse_args()
 
     #Get absolute path of directory 
