@@ -14,14 +14,23 @@ if not os.path.isdir(path_to_save_files):
 globals()['s125_'+str(run_year)] = []
 globals()['stations_'+str(run_year)] = []
 globals()['zenith_'+str(run_year)] = []
+globals()['azimuth_'+str(run_year)] = []
+globals()['ShowerPlaneZen_'+str(run_year)] = []
+globals()['ShowerPlaneAz_'+str(run_year)] = []
 for file in glob.glob('{}/l3_data_run_config_{}_*.hdf5'.format(path_to_hdf5_files, run_year)):
     f = h5py.File(file, 'r')
     globals()['s125_'+str(run_year)].extend(f['LaputopParams']['s125'])
     globals()['stations_'+str(run_year)].extend(f['NStations']['value'])
     globals()['zenith_'+str(run_year)].extend(f['Laputop']['zenith'])
+    globals()['azimuth_'+str(run_year)].extend(f['Laputop']['azimuth'])
+    globals()['ShowerPlaneZen_'+str(run_year)].extend(f['ShowerPlane']['zenith'])
+    globals()['ShowerPlaneAz_'+str(run_year)].extend(f['ShowerPlane']['azimuth'])    
 np.save('{}/s125_{}'.format(path_to_save_files, str(run_year)), globals()['s125_'+str(run_year)])
 np.save('{}/stations_{}'.format(path_to_save_files, str(run_year)), globals()['stations_'+str(run_year)])
 np.save('{}/zenith_{}'.format(path_to_save_files, str(run_year)), globals()['zenith_'+str(run_year)])
+np.save('{}/azimuth_{}'.format(path_to_save_files, str(run_year)), globals()['azimuth_'+str(run_year)])
+np.save('{}/ShowerPlaneZen_{}'.format(path_to_save_files, str(run_year)), globals()['ShowerPlaneZen_'+str(run_year)])
+np.save('{}/ShowerPlaneAz_{}'.format(path_to_save_files, str(run_year)), globals()['ShowerPlaneAz_'+str(run_year)])
 print(run_year, len(globals()['s125_'+str(run_year)]), len(globals()['stations_'+str(run_year)])) 
 
 
