@@ -1,4 +1,5 @@
 # Data to simulation comparison
+#NOTES: For gunwati's hdf -> .npy burnsample
 
 # imports
 import numpy as np
@@ -51,7 +52,7 @@ def apply_cuts(arr, stations, bounds, radians=False):
     if radians:
         for tier in arrays:
             output.append(np.rad2deg(tier))
-            return output
+        return output
     else:
         return arrays
 
