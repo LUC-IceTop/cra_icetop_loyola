@@ -1,11 +1,19 @@
+#!/usr/bin/env python3
 import numpy as np
 import h5py, glob
 import os
-import sys 
+import sys
+from argparse import ArgumentParser
 
-run_year = int(sys.argv[1])
-path_to_hdf5_files = '/data/user/gagrawal/dst_data/10yburnsample' #update to corect directory
-path_to_save_files = 'OUTPUT_DIR' #update to correct directory
+parser = ArgumentParser(description=__doc__)
+parser.add_argument('run_year', type=int)
+parser.add_argument('indir', type=str)
+parser.add_argument('outdir', type=str)
+opts = parser.parse_args()
+
+run_year = opts.run_year 
+path_to_hdf5_files = opts.indir
+path_to_save_files = opts.outdir 
 
 if not os.path.isdir(path_to_save_files):
         print('Creating output directory {}'.format(path_to_save_files))

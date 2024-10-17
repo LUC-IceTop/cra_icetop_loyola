@@ -1,5 +1,5 @@
-Executable = s125_arrays.sh
-arguments = 2011 
+Executable = s125_arrays.py
+arguments = runyear indir outdir
 
 output = /data/user/@USER_DIR@/log/condor.out.$(ClusterId)
 error = /data/user/@USER_DIR@/log/condor.err.$(ClusterId)
